@@ -2,7 +2,7 @@
   do ->
 
     { create-filesystem } = dependency 'os.win32.com.FileSystem'
-    { trimmed-string } = dependency 'unsafe.Whitespace'
+    { trimmed-string, whitespace-as-separator } = dependency 'unsafe.Whitespace'
     { type } = dependency 'reflection.Type'
 
     fs = create-filesystem!

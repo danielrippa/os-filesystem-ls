@@ -2,6 +2,7 @@
   do ->
 
     { create-filesystem } = dependency 'os.win32.com.FileSystem'
+    { string-as-lines } = dependency 'unsafe.Text'
 
     fs = create-filesystem!
 
@@ -20,10 +21,15 @@
 
       open-textstream filepath, io-modes.reading |> use-stream _ , (.ReadAll!)
 
+    read-textfile-lines = (filepath) ->
+
+      read-textfile filepath |> string-as-lines
+
     write-textfile = (filepath, content) ->
 
       open-textstream filepath, io-modes.writing |> use-stream _ , (.Write content)
 
     {
-      read-textfile, write-textfile
+      read-textfile, read-textfile-lines,
+      write-textfile
     }

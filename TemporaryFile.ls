@@ -9,36 +9,70 @@
     { read-textfile, write-textfile } = dependency 'os.filesystem.TextFile'
     { each-env-var, expand } = dependency 'os.shell.EnvVar'
     { lower-case } = dependency 'unsafe.StringCase'
-    { debug } = dependency 'os.shell.IO'
-    { value-as-string } = dependency 'reflection.Value'
+    { knwon-folder-by-csidl, known-folder-csidls } = dependency 'os.filesystem.KnownFolder'
 
-    temporary-folderpath = ->
+    temporary-folderpath = void
 
-      is-valid-userprofile = folder-exists expand '%userprofile%'
+    set-temporary-folderpath = (value) ->
 
-      folderpath = void ; folder-names = <[ temp tmp ]>
+      return no if value is void
 
-      each-env-var 'user', (name, value) ->
+      temporary-folderpath := value ; yes
 
-        if folderpath is void
+    appdata-local-folderpath = ->
 
-          var-name = lower-case name
+      folderpath = known-folder-by-csidl known-folder-csidls.local-app-data
 
-          if var-name in folder-names
+      for suffix in [ 'Low', '' ]
 
-            if folder-exists expand value
+        "#folderpath#suffix" => return .. if folder-exists ..
 
-              folderpath := expand value
+      void
 
-      if folderpath is void
+    special-temporary-folderpath = ->
 
-        folderpath = special-folder special-folders.temporary .Path
+      special-folders
+
+        windows-folderpath = special-folder ..windows
+
+        folderpath = special-folder ..temporary
+
+      return void if folderpath is windows-folderpath
 
       folderpath
 
+    user-env-var-temp-folderpath = ->
+
+      folderpath = void ; names = <[ temp tmp ]>
+
+      each-env-var 'user', (name, value) ->
+
+        env-var = lower-case name ; return unless env-var in names
+
+        if folder-exists value => folderpath := value ; return no
+
+      folderpath
+
+    get-temporary-folderpath = ->
+
+      temporary-folderpath => return .. unless .. is void
+
+      appdata-local-folderpath! => return .. if set-temporary-folderpath ..
+
+      special-temporary-folderpath! => return .. if set-temporary-folderpath ..
+
+      user-env-var-temp-folderpath! => return .. if set-temporary-folderpath ..
+
+      void
+
     create-temporary-file = ->
 
-      filepath = build-path [ temporary-folderpath!, temporary-filename! ]
+      folderpath = get-temporary-folderpath!
+
+      throw new Error "Unable to locate user temp folderpath for TemporaryFile" \
+        if folderpath is void
+
+      filepath = build-path [ folderpath, temporary-filename! ]
 
       read-and-remove = ->
 
@@ -60,6 +94,7 @@
       tempfile
 
     {
+      get-temporary-folderpath,
       create-temporary-file,
       create-temporary-file-with-content
     }

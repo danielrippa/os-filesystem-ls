@@ -9,7 +9,7 @@
     { read-textfile, write-textfile } = dependency 'os.filesystem.TextFile'
     { each-env-var, expand } = dependency 'os.shell.EnvVar'
     { lower-case } = dependency 'unsafe.StringCase'
-    { knwon-folder-by-csidl, known-folder-csidls } = dependency 'os.filesystem.KnownFolder'
+    { known-folderpath-by-csidl, known-folder-csidls, known-folderpath-by-guid, known-folder-guids } = dependency 'os.filesystem.KnownFolder'
 
     temporary-folderpath = void
 
@@ -21,11 +21,11 @@
 
     appdata-local-folderpath = ->
 
-      folderpath = known-folder-by-csidl known-folder-csidls.local-app-data
+      known-folderpath-by-guid known-folder-guids.appdata-locallow => return .. if folder-exists ..
 
-      for suffix in [ 'Low', '' ]
+      folderpath = known-folderpath-by-csidl known-folder-csidls.local-app-data
 
-        "#folderpath#suffix" => return .. if folder-exists ..
+      for suffix in [ 'Low', '' ] => "#folderpath#suffix" => return .. if folder-exists ..
 
       void
 
@@ -65,14 +65,18 @@
 
       void
 
-    create-temporary-file = ->
+    get-temporary-filepath = ->
 
       folderpath = get-temporary-folderpath!
 
       throw new Error "Unable to locate user temp folderpath for TemporaryFile" \
         if folderpath is void
 
-      filepath = build-path [ folderpath, temporary-filename! ]
+      build-path [ folderpath, temporary-filename! ]
+
+    create-temporary-file = ->
+
+      filepath = get-temporary-filepath!
 
       read-and-remove = ->
 
@@ -94,7 +98,7 @@
       tempfile
 
     {
-      get-temporary-folderpath,
+      get-temporary-folderpath, get-temporary-filepath,
       create-temporary-file,
       create-temporary-file-with-content
     }

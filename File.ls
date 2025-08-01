@@ -32,8 +32,12 @@
 
     decompose-filepath = (filepath) -> filepath |> drive-filepath |> drive-paths-filename |> drive-paths-filename-extension
 
+    file-not-found = -> new Error "File '#it' not found"
+
+    filepath-found = (filepath) -> throw file-not-found filepath unless file-exists filepath ; filepath
+
     {
       temporary-filename,
-      file-exists,
+      file-exists, filepath-found,
       compose-filename
     }

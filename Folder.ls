@@ -12,7 +12,11 @@
 
     folder-exists = (folderpath) -> type '< String >' folderpath ; folderpath |> fs.FolderExists
 
+    folder-not-found = -> new Error "Folder '#it' not found"
+
+    folderpath-found = (folderpath) -> throw folder-not-found folderpath unless folder-exists folderpath ; folderpath
+
     {
-      folder-exists,
+      folder-exists, folderpath-found,
       special-folders, special-folder
     }

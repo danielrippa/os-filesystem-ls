@@ -3,15 +3,13 @@
 
     { create-filesystem } = dependency 'os.win32.com.FileSystem'
     { string-as-lines } = dependency 'unsafe.Text'
+    { delete-file } = dependency 'os.filesystem.File'
 
     fs = create-filesystem!
 
     io-modes = reading: 1, writing: 2, appending: 8
 
     open-textstream = (filepath, mode) ->
-
-      # try type '< String >' filepath ; type '< Number >' mode
-      # catch => WScript.Echo e.message
 
       fs.OpenTextFile filepath, mode, yes
 
@@ -29,7 +27,10 @@
 
       open-textstream filepath, io-modes.writing |> use-stream _ , (.Write content)
 
+    consume-textfile = (filepath) -> content = read-textfile filepath ; delete-file filepath ; content
+
     {
       read-textfile, read-textfile-lines,
-      write-textfile
+      write-textfile,
+      consume-textfile
     }
